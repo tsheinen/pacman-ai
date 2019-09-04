@@ -19,6 +19,7 @@ Pacman agents (in searchAgents.py).
 
 import util
 
+
 class SearchProblem:
     """
     This class outlines the structure of a search problem, but doesn't implement
@@ -71,7 +72,8 @@ def tinyMazeSearch(problem):
     s = Directions.SOUTH
     w = Directions.WEST
     print [s, s, w, s, w, w, s, w]
-    return  [s, s, w, s, w, w, s, w]
+    return [s, s, w, s, w, w, s, w]
+
 
 def depthFirstSearch(problem):
     """
@@ -88,7 +90,6 @@ def depthFirstSearch(problem):
     print "Start's successors:", problem.getSuccessors(problem.getStartState())
     """
 
-
     # General setup for DFS
     # stack and visited are used for the actual traversal
     # path is a map of nodes -> the direction used to travel to that node
@@ -102,26 +103,27 @@ def depthFirstSearch(problem):
 
     # Fairly standard DFS
     # Break out early if we hit the goal state since we don't care about anything else
-    while(not stack.isEmpty()):
+    while (not stack.isEmpty()):
         prev = node
         node = stack.pop()
-        if(problem.isGoalState(node[0])):
+        if (problem.isGoalState(node[0])):
             path[node[0]] = prev
             path[0] = node
             break
-        if(node[0] not in visited):
+        if (node[0] not in visited):
             visited.add(node[0])
         for neighbor in problem.getSuccessors(node[0]):
-            if(neighbor[0] not in visited):
+            if (neighbor[0] not in visited):
                 path[neighbor[0]] = node
                 stack.push(neighbor)
     node = 0
     output = []
-    while(node != problem.getStartState()):
-        output.insert(0,path[node][1])
+    while (node != problem.getStartState()):
+        output.insert(0, path[node][1])
         node = path[node][0]
     print len(output)
     return output[1:]
+
 
 def breadthFirstSearch(problem):
     """Search the shallowest nodes in the search tree first."""
@@ -131,22 +133,23 @@ def breadthFirstSearch(problem):
     # it is used to retrace the path we used to find the goal
     node = problem.getStartState()
     queue = util.Queue()
-    queue.push(((node,0), [node]))
+    queue.push(((node, 0), [node]))
     visited = set()
 
     # Fairly standard BFS
     # Need to pass along the path so that we can tell what path led to a given node when we get to the end
-    while(not queue.isEmpty()):
+    while (not queue.isEmpty()):
         node, path = queue.pop()
         visited.add(node[0])
 
-        if(problem.isGoalState(node)):
+        if (problem.isGoalState(node)):
             break
         for neighbor in problem.getSuccessors(node[0]):
-            if(neighbor[0] not in visited):
+            if (neighbor[0] not in visited):
                 visited.add(node[0])
                 queue.push((neighbor, path + [neighbor]))
     return [x[1] for x in path[1:]]
+
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
@@ -158,17 +161,18 @@ def uniformCostSearch(problem):
     queue.push((0, start, []), 0)
     visited = set()
 
-    while(not queue.isEmpty()):
+    while (not queue.isEmpty()):
         cost, curr, path = queue.pop()
         visited.add(curr)
-        if(problem.isGoalState(curr)):
+        if (problem.isGoalState(curr)):
             return path
         for neighbor in problem.getSuccessors(curr):
-            if(neighbor[0] not in visited):
+            if (neighbor[0] not in visited):
                 new_cost = cost + 0
                 queue.push((new_cost, neighbor[0], path + [neighbor[1]]), problem.getCostOfActions(path))
 
     return path
+
 
 def nullHeuristic(state, problem=None):
     """
@@ -177,11 +181,27 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
+
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    start = problem.getStartState()
 
+    queue = util.PriorityQueue()
+
+    queue.push((0, start, []), 0)
+    visited = set()
+
+    while (not queue.isEmpty()):
+        cost, curr, path = queue.pop()
+        visited.add(curr)
+        if (problem.isGoalState(curr)):
+            return path
+        for neighbor in problem.getSuccessors(curr):
+            if (neighbor[0] not in visited):
+                new_cost = cost + 0
+                queue.push((new_cost, neighbor[0], path + [neighbor[1]]), problem.getCostOfActions(path) + heuristic(neighbor[0], problem))
+
+    return path
 
 # Abbreviations
 bfs = breadthFirstSearch
