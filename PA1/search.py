@@ -76,104 +76,36 @@ def tinyMazeSearch(problem):
 
 
 def depthFirstSearch(problem):
+
     """
-    Search the deepest nodes in the search tree first.
-
-    Your search algorithm needs to return a list of actions that reaches the
-    goal. Make sure to implement a graph search algorithm.
-
-    To get started, you might want to try some of these simple commands to
-    understand the search problem that is being passed in:
-
-    print "Start:", problem.getStartState()
-    print "Is the start a goal?", problem.isGoalState(problem.getStartState())
-    print "Start's successors:", problem.getSuccessors(problem.getStartState())
+        Call search function with decreasing cost so as to make priority queue LIFO
+        Counter class serves to give me an object I can decrease and return at the same time
     """
 
-    # General setup for DFS
-    # stack and visited are used for the actual traversal
-    # path is a map of nodes -> the direction used to travel to that node
-    # it is used to retrace the path we used to find the goal
-    node = problem.getStartState()
-    stack = util.Stack()
-    stack.push((node, 0))
-    visited = set()
-    visited.add(node)
-    path = {}
+    class Counter:
+        def __init__(self):
+            self.count = 0
+        def dec(self):
+            self.count -= 1
+            return self.count
 
-    # Fairly standard DFS
-    # Break out early if we hit the goal state since we don't care about anything else
-    while (not stack.isEmpty()):
-        prev = node
-        node = stack.pop()
-        if (problem.isGoalState(node[0])):
-            path[node[0]] = prev
-            path[0] = node
-            break
-        if (node[0] not in visited):
-            visited.add(node[0])
-        for neighbor in problem.getSuccessors(node[0]):
-            if (neighbor[0] not in visited):
-                path[neighbor[0]] = node
-                stack.push(neighbor)
-    node = 0
-    output = []
-    while (node != problem.getStartState()):
-        output.insert(0, path[node][1])
-        node = path[node][0]
-    print len(output)
-    return output[1:]
-
+    counter = Counter()
+    costfn = lambda path, state, problem: counter.dec()
+    return search(problem, costfn)
 
 def breadthFirstSearch(problem):
-    """Search the shallowest nodes in the search tree first."""
-    # General setup for DFS
-    # stack and visited are used for the actual traversal
-    # path is a map of nodes -> the direction used to travel to that node
-    # it is used to retrace the path we used to find the goal
-    start = problem.getStartState()
-    queue = util.Queue()
-    queue.push((start, []))
-    visited = set([start])
-
-    # Fairly standard BFS
-    # Need to pass along the path so that we can tell what path led to a given node when we get to the end
-    while (not queue.isEmpty()):
-        node, path = queue.pop()
-
-        if (problem.isGoalState(node)):
-            return path
-
-        for neighbor in problem.getSuccessors(node):
-            state, direction, cost = neighbor
-            if (state not in visited):
-                visited.add(state)
-                queue.push((state, path + [direction]))
-
-
+    """
+        Call search function with constant cost so as to make priority queue FIFO
+    """
+    costfn = lambda path, state, problem: 0
+    return search(problem, costfn)
 
 def uniformCostSearch(problem):
-    """Search the node of least total cost first."""
-
-    start = problem.getStartState()
-    queue = util.PriorityQueue()
-    queue.push((start, []), 0)
-
-    visited = set()
-
-    while (not queue.isEmpty()):
-        node, path = queue.pop()
-
-
-        if (problem.isGoalState(node)):
-            return path
-        if node not in visited:
-            for neighbor in problem.getSuccessors(node):
-                state, direction, cost = neighbor
-                if (state not in visited):
-                    new_path = path + [direction]
-                    queue.push((state, new_path), problem.getCostOfActions(new_path))
-            visited.add(node)
+    """
+        Call search function with and forward along cost function to the problem
+    """
+    costfn = lambda path, state, problem: problem.getCostOfActions(path)
+    return search(problem, costfn)
 
 def nullHeuristic(state, problem=None):
     """
@@ -182,10 +114,15 @@ def nullHeuristic(state, problem=None):
     """
     return 0
 
-
 def aStarSearch(problem, heuristic=nullHeuristic):
-    """Search the node that has the lowest combined cost and heuristic first."""
+    """
+        Call search function with cost that is equal to the sum of the problems cost function and the provided heuristic
+    """
+    costfn = lambda path, state, problem: problem.getCostOfActions(path) + heuristic(state, problem)
+    return search(problem, costfn)
 
+
+def search(problem, costfn):
     start = problem.getStartState()
     queue = util.PriorityQueue()
     queue.push((start, []), 0)
@@ -202,8 +139,10 @@ def aStarSearch(problem, heuristic=nullHeuristic):
                 state, direction, cost = neighbor
                 if (state not in visited):
                     new_path = path + [direction]
-                    queue.push((state, new_path), problem.getCostOfActions(new_path) + heuristic(state, problem))
+                    cost = costfn(new_path, state, problem)
+                    queue.push((state, new_path), cost)
             visited.add(node)
+
 
 # Abbreviations
 bfs = breadthFirstSearch

@@ -304,11 +304,9 @@ class CornersProblem(search.SearchProblem):
         """
         location, uneaten_food = state
 
-        if location in self.corners:
-            if location in uneaten_food:
-                uneaten_food = filter(lambda x: x != location, uneaten_food)
-            return not uneaten_food
-        return False
+        if location in uneaten_food:
+            uneaten_food = filter(lambda x: x != location, uneaten_food)
+        return not uneaten_food
 
 
     def getSuccessors(self, state):
@@ -324,12 +322,6 @@ class CornersProblem(search.SearchProblem):
 
         successors = []
         for action in [Directions.NORTH, Directions.SOUTH, Directions.EAST, Directions.WEST]:
-            # Add a successor state to the successor list if the action is legal
-            # Here's a code snippet for figuring out whether a new position hits a wall:
-            #   x,y = currentPosition
-            #   dx, dy = Actions.directionToVector(action)
-            #   nextx, nexty = int(x + dx), int(y + dy)
-            #   hitsWall = self.walls[nextx][nexty]
             location, uneaten_food = state
             x,y = location
             dx, dy = Actions.directionToVector(action)
@@ -340,6 +332,7 @@ class CornersProblem(search.SearchProblem):
                 successors.append( ( (nextState, uneaten_food), action, 1) )
 
         self._expanded += 1 # DO NOT CHANGE
+
         return successors
 
     def getCostOfActions(self, actions):
@@ -374,7 +367,7 @@ def cornersHeuristic(state, problem):
 
     distance = lambda x: util.manhattanDistance(location, x)
 
-    # mazeDistance expands less nodes but is noticeably slower
+    # mazeDistance expands only 803 nodes but is noticeably slower
     # distance = lambda x: mazeDistance(location, x, problem.startingGameState)
 
     location, remaining_corners = state
@@ -474,7 +467,6 @@ def foodHeuristic(state, problem):
 
 
 
-    distance = lambda x: cacheMazeDistance(location, x, problem)
 
     def cacheMazeDistance(x, y, problem):
         key = (x, y)
@@ -484,6 +476,8 @@ def foodHeuristic(state, problem):
         problem.heuristicInfo['distances'] = distances
         return distances[key]
     location, foodGrid = state
+
+    distance = lambda x: cacheMazeDistance(location, x, problem)
 
     remaining_food = foodGrid.asList()
     return max([distance(x) for x in remaining_food]) if len(remaining_food) else 0
