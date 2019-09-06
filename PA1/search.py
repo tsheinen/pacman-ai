@@ -131,48 +131,49 @@ def breadthFirstSearch(problem):
     # stack and visited are used for the actual traversal
     # path is a map of nodes -> the direction used to travel to that node
     # it is used to retrace the path we used to find the goal
-    node = problem.getStartState()
+    start = problem.getStartState()
     queue = util.Queue()
-    queue.push(((node, 0), [node]))
-    visited = set()
+    queue.push((start, []))
+    visited = set([start])
 
     # Fairly standard BFS
     # Need to pass along the path so that we can tell what path led to a given node when we get to the end
     while (not queue.isEmpty()):
         node, path = queue.pop()
-        visited.add(node[0])
 
         if (problem.isGoalState(node)):
-            break
-        for neighbor in problem.getSuccessors(node[0]):
-            if (neighbor[0] not in visited):
-                visited.add(node[0])
-                queue.push((neighbor, path + [neighbor]))
-    return [x[1] for x in path[1:]]
+            return path
+
+        for neighbor in problem.getSuccessors(node):
+            state, direction, cost = neighbor
+            if (state not in visited):
+                visited.add(state)
+                queue.push((state, path + [direction]))
+
 
 
 def uniformCostSearch(problem):
     """Search the node of least total cost first."""
 
     start = problem.getStartState()
-
     queue = util.PriorityQueue()
+    queue.push((start, []), 0)
 
-    queue.push((0, start, []), 0)
     visited = set()
 
     while (not queue.isEmpty()):
-        cost, curr, path = queue.pop()
-        visited.add(curr)
-        if (problem.isGoalState(curr)):
+        node, path = queue.pop()
+
+
+        if (problem.isGoalState(node)):
             return path
-        for neighbor in problem.getSuccessors(curr):
-            if (neighbor[0] not in visited):
-                new_cost = cost + 0
-                queue.push((new_cost, neighbor[0], path + [neighbor[1]]), problem.getCostOfActions(path))
-
-    return path
-
+        if node not in visited:
+            for neighbor in problem.getSuccessors(node):
+                state, direction, cost = neighbor
+                if (state not in visited):
+                    new_path = path + [direction]
+                    queue.push((state, new_path), problem.getCostOfActions(new_path))
+            visited.add(node)
 
 def nullHeuristic(state, problem=None):
     """
@@ -184,24 +185,25 @@ def nullHeuristic(state, problem=None):
 
 def aStarSearch(problem, heuristic=nullHeuristic):
     """Search the node that has the lowest combined cost and heuristic first."""
+
     start = problem.getStartState()
-
     queue = util.PriorityQueue()
+    queue.push((start, []), 0)
 
-    queue.push((0, start, []), 0)
     visited = set()
 
     while (not queue.isEmpty()):
-        cost, curr, path = queue.pop()
-        visited.add(curr)
-        if (problem.isGoalState(curr)):
-            return path
-        for neighbor in problem.getSuccessors(curr):
-            if (neighbor[0] not in visited):
-                new_cost = cost + 0
-                queue.push((new_cost, neighbor[0], path + [neighbor[1]]), problem.getCostOfActions(path) + heuristic(neighbor[0], problem))
+        node, path = queue.pop()
 
-    return path
+        if (problem.isGoalState(node)):
+            return path
+        if node not in visited:
+            for neighbor in problem.getSuccessors(node):
+                state, direction, cost = neighbor
+                if (state not in visited):
+                    new_path = path + [direction]
+                    queue.push((state, new_path), problem.getCostOfActions(new_path) + heuristic(state, problem))
+            visited.add(node)
 
 # Abbreviations
 bfs = breadthFirstSearch
