@@ -474,7 +474,6 @@ def foodHeuristic(state, problem):
 
 
 
-    # distance = lambda x: util.manhattanDistance(location, x[0])
     distance = lambda x: cacheMazeDistance(location, x, problem)
 
     def cacheMazeDistance(x, y, problem):
@@ -512,13 +511,8 @@ class ClosestDotSearchAgent(SearchAgent):
         gameState.
         """
         # Here are some useful elements of the startState
-        startPosition = gameState.getPacmanPosition()
-        food = gameState.getFood()
-        walls = gameState.getWalls()
         problem = AnyFoodSearchProblem(gameState)
-
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        return search.bfs(problem)
 
 class AnyFoodSearchProblem(PositionSearchProblem):
     """
@@ -545,6 +539,9 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         self.startState = gameState.getPacmanPosition()
         self.costFn = lambda x: 1
         self._visited, self._visitedlist, self._expanded = {}, [], 0 # DO NOT CHANGE
+        self.startingGameState = gameState
+
+        self.remaining_food = set(self.food.asList())
 
     def isGoalState(self, state):
         """
@@ -552,9 +549,9 @@ class AnyFoodSearchProblem(PositionSearchProblem):
         complete the problem definition.
         """
         x,y = state
-
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        isGoal = state in self.remaining_food
+        self.remaining_food = filter(lambda x: x != state, self.remaining_food)
+        return isGoal
 
 def mazeDistance(point1, point2, gameState):
     """
