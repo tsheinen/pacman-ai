@@ -485,6 +485,7 @@ class HeuristicTest(testClasses.TestCase):
         return problem, state, heuristic
 
     def checkHeuristic(self, heuristic, problem, state, solutionCost):
+        print "h0"
         h0 = heuristic(state, problem)
 
         if solutionCost == 0:
@@ -501,9 +502,11 @@ class HeuristicTest(testClasses.TestCase):
             return False, 'Heuristic failed admissibility test'
 
         for succ, action, stepCost in problem.getSuccessors(state):
+            print "h1"
             h1 = heuristic(succ, problem)
             if h1 < 0: return False, 'Heuristic failed H >= 0 test'
-            if h0 - h1 > stepCost: return False, 'Heuristic failed consistency test'
+            if h0 - h1 > stepCost:
+                return False, 'Heuristic failed consistency test'
 
         return True, ''
 
