@@ -52,21 +52,6 @@ class ReflexAgent(Agent):
         return legalMoves[chosenIndex]
 
     def evaluationFunction(self, currentGameState, action):
-        """
-        Design a better evaluation function here.
-
-        The evaluation function takes in the current and proposed successor
-        GameStates (pacman.py) and returns a number, where higher numbers are better.
-
-        The code below extracts some useful information from the state, like the
-        remaining food (newFood) and Pacman position after moving (newPos).
-        newScaredTimes holds the number of moves that each ghost will remain
-        scared because of Pacman having eaten a power pellet.
-
-        Print out these variables to see what you're getting, then combine them
-        to create a masterful evaluation function.
-        """
-        # Useful information you can extract from a GameState (pacman.py)
         successorGameState = currentGameState.generatePacmanSuccessor(action)
         newPos = successorGameState.getPacmanPosition()
         oldPos = currentGameState.getPacmanPosition()
@@ -229,8 +214,35 @@ class ExpectimaxAgent(MultiAgentSearchAgent):
           All ghosts should be modeled as choosing uniformly at random from their
           legal moves.
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def max_agent(state, depth):
+            actions = state.getLegalActions(0)
+            if (len(actions) == 0):
+                return state.getScore()
+            scores = [(action, min_agent(state.generateSuccessor(0, action), depth, 1, )) for action in actions]
+            bestAction, bestScore = max(scores, key = lambda x: x[1])
+            return bestAction if depth == 0 else bestScore
+
+        def min_agent(state, depth, ghost):
+            actions = state.getLegalActions(ghost)
+            if (len(actions) == 0):
+                return state.getScore()
+            nextGhost = (ghost + 1) % state.getNumAgents()
+            def eval(action):
+                if (nextGhost == 0):
+                    if (depth == self.depth - 1):
+                        score = self.evaluationFunction(state.generateSuccessor(ghost, action))
+                        return score
+                    else:
+                        score = max_agent(state.generateSuccessor(ghost, action), depth + 1)
+                        return score
+                else:
+                    score = min_agent(state.generateSuccessor(ghost, action), depth, nextGhost)
+                    return score
+            scores = [eval(action) for action in actions]
+            return sum(scores) /float(len(scores))
+        return max_agent(gameState, 0)
+
+
 
 def betterEvaluationFunction(currentGameState):
     """
@@ -239,8 +251,11 @@ def betterEvaluationFunction(currentGameState):
 
       DESCRIPTION: <write something here so we know what you did>
     """
-    "*** YOUR CODE HERE ***"
-    util.raiseNotDefined()
+    score = 0
+
+    score = currentGameState.getScore()
+
+    return score
 
 # Abbreviation
 better = betterEvaluationFunction
