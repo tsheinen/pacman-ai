@@ -138,8 +138,35 @@ class MinimaxAgent(MultiAgentSearchAgent):
           gameState.getNumAgents():
             Returns the total number of agents in the game
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def max_agent(state, depth):
+            actions = state.getLegalActions(0)
+            if (len(actions) == 0):
+                return state.getScore()
+
+            scores = [(action, min_agent(state.generateSuccessor(0, action), depth, 1, )) for action in actions]
+
+
+            bestAction, bestScore = max(scores, key = lambda x: x[1])
+            return bestAction if depth == 0 else bestScore
+
+        def min_agent(state, depth, ghost):
+            actions = state.getLegalActions(ghost)
+            if (len(actions) == 0):
+                return state.getScore()
+            nextGhost = (ghost + 1) % state.getNumAgents()
+
+            def eval(action):
+                if (nextGhost == 0):
+                    if (depth == self.depth - 1):
+                        return self.evaluationFunction(state.generateSuccessor(ghost, action))
+                    else:
+                        return max_agent(state.generateSuccessor(ghost, action), depth + 1)
+                else:
+                    return min_agent(state.generateSuccessor(ghost, action), depth, nextGhost)
+            scores = [eval(action) for action in actions]
+            return min(scores)
+        score = max_agent(gameState, 0)
+        return score
 
 class AlphaBetaAgent(MultiAgentSearchAgent):
     """
@@ -150,8 +177,45 @@ class AlphaBetaAgent(MultiAgentSearchAgent):
         """
           Returns the minimax action using self.depth and self.evaluationFunction
         """
-        "*** YOUR CODE HERE ***"
-        util.raiseNotDefined()
+        def max_agent(state, depth, alpha, beta):
+            actions = state.getLegalActions(0)
+            if (len(actions) == 0):
+                return state.getScore()
+
+            best = (float('-inf'), Directions.STOP)
+            for action in actions:
+                score = min_agent(state.generateSuccessor(0, action), depth, 1, alpha, beta)
+                best = max(best, (score, action), key = lambda x: x[0])
+                alpha = max(alpha, best[0])
+                if best[0] > beta:
+                    return best[0]
+            return best[1] if depth == 0 else best[0]
+
+        def min_agent(state, depth, ghost, alpha, beta):
+            actions = state.getLegalActions(ghost)
+            if (len(actions) == 0):
+                return state.getScore()
+            nextGhost = (ghost + 1) % state.getNumAgents()
+
+            def eval(action):
+                if (nextGhost == 0):
+                    if (depth == self.depth - 1):
+                        return self.evaluationFunction(state.generateSuccessor(ghost, action))
+                    else:
+                        return max_agent(state.generateSuccessor(ghost, action), depth + 1, alpha, beta)
+                else:
+                    return min_agent(state.generateSuccessor(ghost, action), depth, nextGhost, alpha, beta)
+
+            best = (float('inf'), Directions.STOP)
+            for action in actions:
+                score = eval(action)
+                best = min(best, (score, action), key = lambda x: x[0])
+                beta = min(beta, best[0])
+                if best[0] < alpha:
+                    return best[0]
+            return best[0]
+        score = max_agent(gameState, 0, float("-inf"), float("inf"))
+        return score
 
 class ExpectimaxAgent(MultiAgentSearchAgent):
     """
